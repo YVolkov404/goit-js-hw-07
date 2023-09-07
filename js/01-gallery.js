@@ -22,7 +22,7 @@ const galleryMarkup = galleryItems.map(({ preview, original, description }) => {
 
 galleryContainer.insertAdjacentHTML('afterbegin', galleryMarkup.join(''));
 
-const handleClickListener = galleryContainer.addEventListener('click', e => {
+const onGalleryImageClick = galleryContainer.addEventListener('click', e => {
     e.preventDefault();
     if (e.target.tagName !== 'IMG') {
         return;
@@ -30,19 +30,27 @@ const handleClickListener = galleryContainer.addEventListener('click', e => {
 
     const instance = basicLightbox.create(
         `<img src='${e.target.dataset.source}' alt='${e.target.alt}' />`,
+        {
+            onShow: () => {
+                galleryContainer.addEventListener(
+                    'keydown',
+                    onEscCloseListener,
+                );
+            },
+            onClose: () => {
+                galleryContainer.removeEventListener(
+                    'keydown',
+                    onEscCloseListener,
+                );
+            },
+        },
     );
 
     instance.show();
 
-    const onEscCloseListener = galleryContainer.addEventListener(
-        'keydown',
-        e => {
-            if (e.code === 'Escape') {
-                instance.close();
-            }
-            onEscCloseListener.removeEventListener('keydown', instance);
-        },
-    );
+    function onEscCloseListener(e) {
+        if (e.code === 'Escape') {
+            instance.close();
+        }
+    }
 });
-
-galleryContainer.removeEventListener('click', handleClickListener);
